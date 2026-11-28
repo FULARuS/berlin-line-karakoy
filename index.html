@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Berlin Line Karaköy — Cocktail bar, live music & kitchen till 4 AM</title>
+<meta name="description" content="Berlin Line Karaköy: a ruby-red cocktail bar on Mumhane Caddesi with live music every evening, signature cocktails and Berlin döner. Open daily 10:00–04:00.">
+<meta name="theme-color" content="#140205">
+<meta property="og:title" content="Berlin Line Karaköy — Music · Drinks · Food">
+<meta property="og:description" content="Drag the 3D bar rail, pick a cocktail, see what's inside. Open daily till 4 AM in Karaköy.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@700;800;900&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lenis@1.3.28/dist/lenis.css">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<!-- ============ HERO: 3D bar rail ============ -->
+<section class="hero" id="top" data-nav="cocktails" aria-label="Interactive cocktail rail">
+  <h1 class="sr-only" data-i18n="hero.title">Berlin Line Karaköy — cocktail bar, live music and kitchen till 4 AM</h1>
+  <canvas id="bar3d" aria-label="3D bar counter with cocktails. Drag left or right, click a drink to see its ingredients." tabindex="0"></canvas>
+  <div class="hero-vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="status" data-status><i class="dot"></i><span></span></span>
+      <span class="addr">Mumhane Cd. 32B · Karaköy</span>
+    </div>
+    <a class="logo" href="#top" aria-label="Berlin Line Karaköy">
+      <span class="logo-word">BERL<span class="logo-i"></span>N</span>
+      <span class="logo-script">line</span>
+      <span class="logo-sub">Berlin Line Karaköy</span>
+    </a>
+    <div class="topbar-right">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="tr">TR</button><button data-lang="en">EN</button><button data-lang="ru">RU</button>
+      </div>
+      <a class="btn-outline btn-sm" href="#reservations" data-i18n="top.reserve">Reserve</a>
+    </div>
+  </header>
+
+  <div class="rail-ui">
+    <button class="rail-arrow prev" aria-label="Previous drink" data-step="-1"><svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg></button>
+    <button class="rail-arrow next" aria-label="Next drink" data-step="1"><svg viewBox="0 0 24 24"><path d="m9 4 8 8-8 8"/></svg></button>
+    <div class="rail-label">
+      <button class="drink-plate" id="drinkPlate" type="button">
+        <span class="plate-name" id="plateName">Signature Ruby</span>
+      </button>
+      <p class="rail-hint"><span class="hint-hand" aria-hidden="true">⟷</span> <span data-i18n="hero.hint">Drag the rail · tap a drink</span></p>
+    </div>
+  </div>
+
+  <!-- ingredient card -->
+  <aside class="drink-card" id="drinkCard" aria-live="polite" aria-hidden="true">
+    <div class="card-frame notched">
+      <button class="card-close" type="button" aria-label="Close" data-close>×</button>
+      <p class="card-kind" id="cardKind">Signature cocktail</p>
+      <h2 class="card-name" id="cardName">Golden Garden</h2>
+      <p class="card-tagline" id="cardTagline"></p>
+      <div class="rule"></div>
+      <h3 class="card-h" data-i18n="card.ingredients">Ingredients</h3>
+      <ul class="card-list" id="cardIngredients"></ul>
+      <div class="rule"></div>
+      <h3 class="card-h" data-i18n="card.garnish">Garnish</h3>
+      <p class="card-text" id="cardGarnish"></p>
+      <div class="card-meta">
+        <div><span class="meta-k" data-i18n="card.glass">Glass</span><span class="meta-v" id="cardGlass"></span></div>
+        <div><span class="meta-k" data-i18n="card.strength">Strength</span><span class="meta-v strength" id="cardStrength"></span></div>
+      </div>
+      <div class="card-tags" id="cardTags"></div>
+      <a class="btn-gold" id="cardCta" target="_blank" rel="noopener"><span data-i18n="card.cta">Reserve a table</span></a>
+      <div class="card-nav">
+        <button type="button" data-step="-1" aria-label="Previous drink">‹</button>
+        <span id="cardCount">01 / 12</span>
+        <button type="button" data-step="1" aria-label="Next drink">›</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="loader" id="loader"><span class="loader-glass"></span><span data-i18n="hero.loading">Setting the bar…</span></div>
+  <div class="no-webgl" id="noWebgl" hidden><p data-i18n="hero.nowebgl">Your browser can't show the 3D bar — scroll down for the full cocktail list.</p></div>
+</section>
+
+<!-- ============ pill nav ============ -->
+<nav class="pillnav" aria-label="Sections">
+  <a href="#bar" data-link="bar" data-i18n="nav.bar">Bar</a>
+  <a href="#cocktails" data-link="cocktails" data-i18n="nav.cocktails">Cocktails</a>
+  <a href="#menu" data-link="menu" data-i18n="nav.menu">Menu</a>
+  <a href="#reservations" data-link="reservations" data-i18n="nav.res">Reservations</a>
+</nav>
+
+<main>
+<!-- ============ BAR ============ -->
+<section class="section" id="bar" data-nav="bar">
+  <div class="container bar-grid">
+    <div class="bar-copy reveal">
+      <p class="eyebrow" data-i18n="bar.eyebrow">Bar · Music · Kitchen</p>
+      <h2 class="h2" data-i18n="bar.h2">Music. Drinks. Food. <em>Till 4 AM.</em></h2>
+      <p class="lead" data-i18n="bar.p1">A ruby-red room on Mumhane Caddesi with a live band every evening, a bartender who takes cocktails personally and a heated terrace for long Karaköy nights.</p>
+      <p class="body" data-i18n="bar.p2">From 10:00 the open kitchen serves Berlin-style döner, crispy chicken burgers and wings — with five house sauces on every plate.</p>
+      <div class="stats">
+        <div class="stat"><b>4.1<small>★</small></b><span data-i18n="stat.rating">2,022 Google reviews</span></div>
+        <div class="stat"><b>10–04</b><span data-i18n="stat.hours">Open every day</span></div>
+        <div class="stat"><b data-i18n="stat.liveV">Live</b><span data-i18n="stat.music">Band every evening</span></div>
+      </div>
+    </div>
+    <div class="bar-photos reveal">
+      <figure class="ph ph-a notched"><img src="https://lh3.googleusercontent.com/grass-cs/AABkmLc8FT64ZnJOgc9T78Er4WpVCoDKlQ2mFC3nxO7hvH9N4CQeMJypHLXdhs1j5zoQgNWFs-D__PEFCA--XcHiISYSKInGcfWkpPsLw2K0GQC6IxVZC1P2pK5MNIOtLpgT3wjKbvdDSlYHPGZr=w1100" alt="Berlin Line bar interior at night" loading="lazy"></figure>
+      <figure class="ph ph-b notched"><img src="https://lh3.googleusercontent.com/grass-cs/AABkmLeNsmnM0R1sCBavGPjPCmpJ7zxTU8Gm5eHSaYc8_MwbpUYn_hx1luu6ZUvBUv1z-Cd6vrkho7mlpsVcSoFaTUBUCzJ1_W-iKaJ6nRdi3CJ_5Bl1LSfgrEWFiLP9abQI78xm7wijbu8BVu8J=w700" alt="Berlin Line neon sign" loading="lazy"></figure>
+      <figure class="ph ph-c notched"><img src="https://lh3.googleusercontent.com/grass-cs/AABkmLdYOKXsfI2hrKIiCN1wVrrZrqmMqut_AXJ0Cw1m2oTTqaFEeZPZIGGtaV3-ireQbSqXQSa9lexUyng3d1ATVnRVFFJ6USwyqTHdJeT9u5OjMqJn-4RjzBcBCiu8kQHZ52dcsQbY=w900" alt="Heated terrace on Mumhane Caddesi" loading="lazy"></figure>
+    </div>
+  </div>
+  <div class="container features">
+    <div class="feature reveal"><span class="f-num">I</span><h3 data-i18n="f1.h">Live music</h3><p data-i18n="f1.p">Every evening a band plays — 182 guests mention it in their reviews.</p></div>
+    <div class="feature reveal"><span class="f-num">II</span><h3 data-i18n="f2.h">Heated terrace</h3><p data-i18n="f2.p">Patio heaters outside, a warm room inside, Glühwein on cold nights.</p></div>
+    <div class="feature reveal"><span class="f-num">III</span><h3 data-i18n="f3.h">We speak your language</h3><p data-i18n="f3.p">English, Turkish and Russian — at the bar and on this site.</p></div>
+  </div>
+</section>
+
+<!-- ============ COCKTAILS ============ -->
+<section class="section alt" id="cocktails" data-nav="cocktails">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="ck.eyebrow">The cocktail list</p>
+      <h2 class="h2" data-i18n="ck.h2">Twelve glasses on the rail</h2>
+      <p class="lead" data-i18n="ck.p">Signatures from our bartenders and the classics done properly. Prices at the bar — ask for today’s list.</p>
+      <div class="filters" role="group" aria-label="Filter">
+        <button class="chip active" data-filter="all" data-i18n="ck.all">All</button>
+        <button class="chip" data-filter="signature" data-i18n="ck.sig">Signature</button>
+        <button class="chip" data-filter="classic" data-i18n="ck.classic">Classics</button>
+      </div>
+    </div>
+    <div class="ck-grid" id="ckGrid"></div>
+    <blockquote class="big-quote reveal">
+      <p data-i18n="ck.quote">“The tastiest, best-quality cocktails. We haven’t had better anywhere.”</p>
+      <footer data-i18n="ck.quoteby">Irina R. · Google review</footer>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ MENU ============ -->
+<section class="section" id="menu" data-nav="menu">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="menu.eyebrow">Kitchen · 10:00–04:00</p>
+      <h2 class="h2" data-i18n="menu.h2">Hungry at any hour</h2>
+      <p class="lead" data-i18n="menu.p">Prices from our printed menu, in Turkish lira. Everything crispy comes with fries and five house sauces.</p>
+    </div>
+    <div class="tabs reveal" role="tablist" id="menuTabs"></div>
+    <div class="menu-panel notched reveal" id="menuPanel"></div>
+    <p class="menu-note" data-i18n="menu.note">Prices may change — message us for today’s menu.</p>
+  </div>
+</section>
+
+<!-- ============ REVIEWS ============ -->
+<section class="section alt" id="reviews" data-nav="menu">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="rev.eyebrow">Guests about us</p>
+      <h2 class="h2" data-i18n="rev.h2">1,279 five-star nights</h2>
+    </div>
+    <div class="reviews">
+      <article class="review notched reveal"><div class="stars">★★★★★</div><p data-i18n="rev.1">Really enjoyed the atmosphere — lovely lighting and a live band playing calm music. They kindly extended happy hour for us.</p><footer>Jonzy92 · Local Guide</footer></article>
+      <article class="review notched reveal"><div class="stars">★★★★★</div><p data-i18n="rev.2">Super cosy bar with very friendly staff. Good music, good beer — they even serve mulled wine.</p><footer>Alex · Google</footer></article>
+      <article class="review notched reveal"><div class="stars">★★★★★</div><p data-i18n="rev.3">My mum and I had a wonderful time. Timur made our evening — and the live music made it even better.</p><footer>Valeria G. · Google</footer></article>
+    </div>
+    <a class="g-link" href="https://maps.google.com/?cid=4536887965110800248" target="_blank" rel="noopener"><span>4.1 ★</span> <span data-i18n="rev.all">All 2,022 reviews on Google</span> →</a>
+  </div>
+</section>
+
+<!-- ============ RESERVATIONS ============ -->
+<section class="section" id="reservations" data-nav="reservations">
+  <div class="container res-grid">
+    <div class="reveal">
+      <p class="eyebrow" data-i18n="res.eyebrow">Reservations</p>
+      <h2 class="h2" data-i18n="res.h2">Hold a table close to the band</h2>
+      <p class="lead" data-i18n="res.p">Fill in the form — it opens WhatsApp with your request ready to send.</p>
+      <form class="res-form notched" id="resForm" novalidate>
+        <label class="f-full"><span data-i18n="res.name">Your name</span><input name="name" autocomplete="name" required></label>
+        <label><span data-i18n="res.date">Date</span><input type="date" name="date" required></label>
+        <label><span data-i18n="res.time">Time</span><select name="time" id="resTime"></select></label>
+        <label><span data-i18n="res.guests">Guests</span><select name="guests" id="resGuests"></select></label>
+        <label class="f-full"><span data-i18n="res.note">Occasion or wishes (optional)</span><input name="note"></label>
+        <button class="btn-gold f-full" type="submit"><span data-i18n="res.submit">Send via WhatsApp</span></button>
+        <p class="form-msg f-full" id="formMsg" role="status"></p>
+      </form>
+    </div>
+    <div class="res-info reveal">
+      <div class="map notched"><iframe title="Berlin Line Karaköy on Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=Berlin%20Line%20Karak%C3%B6y%2C%20Mumhane%20Cd.%20No.32%20B%2C%20Beyo%C4%9Flu%2C%20%C4%B0stanbul&z=17&output=embed"></iframe></div>
+      <dl class="info">
+        <div><dt data-i18n="res.where">Find us</dt><dd>Kemankeş Karamustafa Paşa, Mumhane Cd. No:32 B, 34425 Beyoğlu / İstanbul<br><small data-i18n="res.walk">A few minutes’ walk from Karaköy tram (T1) and the ferry pier.</small></dd></div>
+        <div><dt data-i18n="res.hoursK">Hours</dt><dd data-i18n="res.hours">Every day 10:00 – 04:00</dd></div>
+        <div><dt data-i18n="res.phoneK">Phone</dt><dd><a href="tel:+905496003540">+90 549 600 35 40</a></dd></div>
+      </dl>
+      <div class="info-btns">
+        <a class="btn-outline" href="https://www.google.com/maps/dir/?api=1&destination=Berlin%20Line%20Karak%C3%B6y%2C%20Mumhane%20Cd.%20No.32%20B%2C%20Beyo%C4%9Flu" target="_blank" rel="noopener" data-i18n="res.route">Get directions</a>
+        <a class="btn-outline" href="tel:+905496003540" data-i18n="res.call">Call</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <a class="logo logo-sm" href="#top" aria-label="Berlin Line Karaköy"><span class="logo-word">BERL<span class="logo-i"></span>N</span><span class="logo-script">line</span></a>
+    <p>© <span data-year></span> Berlin Line Karaköy · Mumhane Cd. No:32 B, Beyoğlu · <a href="tel:+905496003540">+90 549 600 35 40</a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.3.28/dist/lenis.min.js"></script>
+<script type="module" src="js/app.js"></script>
+<div style="text-align:center;font:12px/1.6 system-ui,sans-serif;opacity:.55;padding:14px 10px 22px">Demo concept · not the official website</div>
+</body>
+</html>
